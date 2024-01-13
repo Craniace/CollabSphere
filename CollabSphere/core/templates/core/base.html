@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}{% endblock %}CollabSphere</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+        }
+
+        body {
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://w0.peakpx.com/wallpaper/368/950/HD-wallpaper-azure-moon-azure-clouds-moon-stars-ocean-sky-night.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px); /* Increased blur amount */
+            z-index: -1;
+        }
+
+        .light-mode .bg-blue-800 {
+            background-color: #2d3748; /* Change this color for dark mode */
+        }
+
+        .light-mode .text-white {
+            color: #fff; /* Change this color for dark mode */
+        }
+
+        .light-mode .bg-blue-600 {
+            background-color: #4a5568; /* Change this color for dark mode */
+        }
+
+        nav a {
+            font-weight: bold;
+            color: white;
+            border: none;
+            position: relative;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            border-bottom: 2px solid white;
+        }
+
+        .toggle-button {
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .toggle-button.light-mode {
+            background-color: #1a202c; /* Change this color for dark mode */
+            color: white;
+        }
+
+        .toggle-button.dark-mode {
+            background-color: #f8f8f8; /* Change this color for light mode */
+            color: black;
+        }
+
+        .moon-icon,
+        .sun-icon {
+            transition: transform 0.3s;
+        }
+
+        .light-mode .moon-icon {
+            transform: translateY(0);
+        }
+
+        .light-mode .sun-icon {
+            transform: translateY(20px);
+        }
+
+        .footer {
+            background-color: #2d3748; /* Change this color as needed */
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body class="bg-blue-600 light-mode">
+    <nav class="flex items-center justify-between px-4 py-4 bg-blue-800">
+        <div>
+            <a href="/" class="text-xl text-white">HOME</a>
+        </div>
+        <div class="flex items-center space-x-8">
+            {% if request.user.is_authenticated %}
+                <a href="/rooms/" class="text-white hover:text-amber-200">ROOMS</a>
+                <a href="/logout/" class="text-white hover:text-gray-200">LOG OUT</a>
+                <a href="mailto:contact@example.com" class="text-white hover:text-gray-200">CONTACT US</a>
+            {% else %}
+                <a href="/login/" class="text-white hover:text-gray-200">LOG IN</a>
+                <a href="/signup/" class="text-white hover:text-gray-200">SIGN UP</a>
+                <a href="mailto:contact@example.com" class="text-white hover:text-gray-200">CONTACT US</a>
+            {% endif %}
+        </div>
+
+        <button id="darkModeToggle" class="flex items-center px-4 py-2 rounded-md toggle-button light-mode">
+            <span class="moon-icon w-1 h-6" style="display: inline-block; vertical-align: middle;"
+                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 21a9 9 0 0 1-9-9c0-4.97 4.03-9 9-9a9 9 0 0 1 0 18z"></path>
+            </span>
+            <span class="sun-icon w-1 h-6 hidden" style="display: inline-block; vertical-align: middle;"
+                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </span>
+            <span id="modeText" style="margin-left: 1px; display: inline-block; vertical-align: middle;">DARK</span>
+        </button>
+    </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <div class="footer bg-blue-800 text-white py-3 text-center">
+        &copy; 2024 CollabSphere.
+    </div>
+
+    {% block scripts %}
+    <script>
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+        const modeText = document.getElementById('modeText');
+
+        darkModeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            const isDarkMode = body.classList.contains('light-mode');
+            modeText.innerText = isDarkMode ? 'DARK' : 'LIGHT';
+        });
+    </script>
+    {% endblock %}
+</body>
+
+</html>
+
